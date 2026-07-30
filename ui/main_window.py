@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from agents import DynaQAgent, DynaQPlusAgent
 from core.simulation_session import SimulationSession
 from ui.control_panel import ControlPanel
 from ui.grid_widget import GridWidget
@@ -128,6 +129,7 @@ class MainWindow(QMainWindow):
             )
 
     def update_ui(self):
+        self.grid_widget.agent = self.session.agent
         self.update_grid_size()
         self.grid_widget.update()
         self.status_bar_widget.update_status(self.session)
@@ -144,7 +146,7 @@ class MainWindow(QMainWindow):
                 "learning_rate": self.session.agent.learning_rate,
                 "discount_factor": self.session.agent.discount_factor,
                 "epsilon": self.session.agent.epsilon,
-                "learning_strategy": self.session.agent.learning_strategy.name.value,
+                "agent_type": self.session.agent.name,
                 "simulation_mode": self.session.simulation.mode,
                 "autoplay_episode_limit": self.control_panel.get_episode_limit(),
                 "autoplay_speed": self.control_panel.get_speed(),
@@ -170,6 +172,16 @@ class MainWindow(QMainWindow):
             "episodes": self.session.simulation.episode_summaries,
             "created_at": datetime.now().isoformat(),
         }
+
+        if isinstance(self.session.agent, DynaQAgent):
+            data["config"]["planning_steps"] = (
+                self.session.agent.planning_steps
+            )
+
+        if isinstance(self.session.agent, DynaQPlusAgent):
+            data["config"]["exploration_bonus"] = (
+                self.session.agent.exploration_bonus
+            )
 
         file_path, _ = QFileDialog.getSaveFileName(
             self,

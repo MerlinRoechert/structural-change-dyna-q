@@ -1,4 +1,4 @@
-from core.agent import Agent
+from agents import Agent
 from core.grid_world import GridWorld
 from core.world_object import Goal, Slippery, Trap
 
@@ -9,8 +9,7 @@ class SimulationMode:
 
 
 class Simulation:
-    def __init__(self, world: GridWorld, agent: Agent):
-        self.world = world
+    def __init__(self, agent: Agent):
         self.agent = agent
         self.mode = SimulationMode.TRAIN
 
@@ -18,9 +17,20 @@ class Simulation:
 
         self.reset_episode()
 
+    @property
+    def world(self) -> GridWorld:
+        return self.agent.world
+
+    @property
+    def state(self) -> tuple[int, int]:
+        return self.agent.state
+
+    @property
+    def done(self) -> bool:
+        return self.agent.terminated
+
     def reset_episode(self):
-        self.state = self.world.reset()
-        self.done = False
+        self.agent.reset_episode()
         self.total_reward = 0
         self.steps = 0
 
@@ -47,25 +57,10 @@ class Simulation:
         if self.done:
             return
 
-        if self.mode == SimulationMode.EVAL:
-            action = self.agent.choose_action(self.state, epsilon_override=0.0)
-        else:
-            action = self.agent.choose_action(self.state)
+        training = self.mode == SimulationMode.TRAIN
+        self.agent.next(training)
 
-        next_state, reward, done = self.world.step(action)
-
-        if self.mode == SimulationMode.TRAIN:
-            self.agent.update_q_value(
-                self.state,
-                action,
-                next_state,
-                reward,
-                done,
-            )
-
-        self.state = next_state
-        self.done = done
-        self.total_reward += reward
+        self.total_reward += self.agent.last_reward
         self.steps += 1
 
         self.track_current_state()

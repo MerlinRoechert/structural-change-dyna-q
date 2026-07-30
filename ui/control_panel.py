@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
-from core.learning_strategy import QLearning
+from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent
 from core.simulation import SimulationMode
 from core.simulation_session import SimulationSession
 
@@ -74,8 +74,24 @@ class ControlPanel(QWidget):
         self.epsilon_input.setDecimals(2)
         self.epsilon_input.setValue(agent.epsilon)
 
-        self.strategy_dropdown = QComboBox()
-        self.strategy_dropdown.addItem("Q-Learning", QLearning)
+        self.agent_dropdown = QComboBox()
+        self.agent_dropdown.addItem("Q-Learning", QLearningAgent)
+        self.agent_dropdown.addItem("Dyna-Q", DynaQAgent)
+        self.agent_dropdown.addItem("Dyna-Q+", DynaQPlusAgent)
+
+        self.planning_steps_input = QSpinBox()
+        self.planning_steps_input.setRange(0, 10_000)
+        self.planning_steps_input.setValue(
+            DynaQAgent.DEFAULT_PLANNING_STEPS
+        )
+
+        self.exploration_bonus_input = QDoubleSpinBox()
+        self.exploration_bonus_input.setRange(0.0, 1.0)
+        self.exploration_bonus_input.setSingleStep(0.001)
+        self.exploration_bonus_input.setDecimals(4)
+        self.exploration_bonus_input.setValue(
+            DynaQPlusAgent.DEFAULT_EXPLORATION_BONUS
+        )
 
         self.mode_dropdown = QComboBox()
         self.mode_dropdown.addItem("Train", SimulationMode.TRAIN)
@@ -88,7 +104,12 @@ class ControlPanel(QWidget):
         settings_layout.addRow("Learning Rate", self.learning_rate_input)
         settings_layout.addRow("Discount Factor", self.discount_input)
         settings_layout.addRow("Epsilon", self.epsilon_input)
-        settings_layout.addRow("Learning Strategy", self.strategy_dropdown)
+        settings_layout.addRow("Agent", self.agent_dropdown)
+        settings_layout.addRow("Planning Steps", self.planning_steps_input)
+        settings_layout.addRow(
+            "Exploration Bonus",
+            self.exploration_bonus_input,
+        )
         settings_layout.addRow("Simulation Mode", self.mode_dropdown)
 
         autoplay_group = QGroupBox("Autoplay")
@@ -122,20 +143,37 @@ class ControlPanel(QWidget):
         self.export_results_button.clicked.connect(self.export_results_clicked.emit)
 
         self.speed_slider.valueChanged.connect(self.update_speed_label)
+        self.agent_dropdown.currentIndexChanged.connect(
+            self.update_planning_steps_availability
+        )
+        self.update_planning_steps_availability()
 
     def update_speed_label(self):
         self.speed_label.setText(f"{self.speed_slider.value()} steps/s")
 
+    def update_planning_steps_availability(self):
+        agent_type = self.agent_dropdown.currentData()
+        self.planning_steps_input.setEnabled(
+            issubclass(agent_type, DynaQAgent)
+        )
+        self.exploration_bonus_input.setEnabled(
+            agent_type is DynaQPlusAgent
+        )
+
     def apply_settings(self):
+        agent_type = self.agent_dropdown.currentData()
+        self.session.set_agent_type(agent_type)
         agent = self.session.agent
 
         agent.learning_rate = self.learning_rate_input.value()
         agent.discount_factor = self.discount_input.value()
         agent.epsilon = self.epsilon_input.value()
 
-        strategy_class = self.strategy_dropdown.currentData()
-        if not isinstance(agent.learning_strategy, strategy_class):
-            agent.learning_strategy = strategy_class()
+        if isinstance(agent, DynaQAgent):
+            agent.planning_steps = self.planning_steps_input.value()
+
+        if isinstance(agent, DynaQPlusAgent):
+            agent.exploration_bonus = self.exploration_bonus_input.value()
 
         self.session.simulation.mode = self.mode_dropdown.currentData()
 

@@ -1,24 +1,56 @@
 import random
-from typing import Tuple
 
 from core.action import ACTION_DELTAS, Action
+from core.world_map import WorldMap
 from core.world_object import Candy, Empty, Goal, Slippery, Trap, Wall, WorldObject
 
 class GridWorld:
-    def __init__(self, start_position: tuple[int, int]):
+    def __init__(
+        self,
+        start_position: tuple[int, int],
+        world_map: WorldMap | None = None,
+    ):
         self.start_position: tuple[int, int] = start_position
         self.current_agent_position: tuple[int, int] = start_position
-        self.candys: list[tuple[int, int]] = []
-        self.map: list[list[WorldObject]] = [
-            [Empty(), Empty(), Empty(), Empty(), Wall()],
-            [Empty(), Wall(), Wall(), Empty(), Empty()],
-            [Empty(), Empty(), Trap(), Empty(), Wall()],
-            [Trap(), Empty(), Empty(), Empty(), Empty()],
-            [Empty(), Empty(), Wall(), Goal(), Wall()],
-        ]
+        if world_map is None:
+            world_map = self._create_default_map()
+
+        self.map = world_map
+
+        self._validate_map()
         self.height = len(self.map)
         self.width = len(self.map[0])
-        self.collect_candys()
+
+    def _create_default_map(self) -> WorldMap:
+        return WorldMap(
+            states={
+                1: [
+                    [Empty(), Empty(), Empty(), Empty(), Wall()],
+                    [Empty(), Wall(), Wall(), Empty(), Empty()],
+                    [Empty(), Empty(), Trap(), Empty(), Wall()],
+                    [Trap(), Empty(), Empty(), Empty(), Empty()],
+                    [Empty(), Empty(), Wall(), Goal(), Wall()],
+                ]
+            }
+        )
+
+    def _validate_map(self):
+        if not self.map or not self.map[0]:
+            raise ValueError("world_map must not be empty")
+
+        width = len(self.map[0])
+        if any(len(row) != width for row in self.map):
+            raise ValueError("world_map must be rectangular")
+
+        start_row, start_col = self.start_position
+        if not 0 <= start_row < len(self.map):
+            raise ValueError("start row is outside world_map")
+
+        if not 0 <= start_col < width:
+            raise ValueError("start column is outside world_map")
+
+        if not self.map[start_row][start_col].accessible:
+            raise ValueError("start position must be accessible")
 
     def print_map(self):
         for r, row in enumerate(self.map):
@@ -31,20 +63,8 @@ class GridWorld:
 
     def reset(self) -> tuple[int, int]:
         self.current_agent_position = self.start_position
-        self.restore_candys()
+        self.map.set_state(self.map.current_state)
         return self.current_agent_position
-    
-    def restore_candys(self):
-        for position in self.candys:
-            self.map[position[0]][position[1]] = Candy()
-
-    def collect_candys(self):
-        self.candys = []
-
-        for r, row in enumerate(self.map):
-            for c, cell in enumerate(row):
-                if isinstance(cell, Candy):
-                    self.candys.append((r, c))
 
     def get_cell(self, position: tuple[int , int]) -> WorldObject:
         row, col = position
@@ -93,46 +113,39 @@ class GridWorld:
         return new_position, reward, terminal
     
     def insert_column(self, col_index: int):
-        for row in self.map:
-            row.insert(col_index, Empty())
+        self.map.insert_column(col_index)
 
         self.width = len(self.map[0])
-        self.collect_candys()
 
 
     def remove_column(self, col_index: int):
         if self.width <= 1:
             return
 
-        for row in self.map:
-            row.pop(col_index)
+        self.map.remove_column(col_index)
 
         self.width = len(self.map[0])
 
         self.start_position = self._clamp_position(self.start_position)
         self.current_agent_position = self._clamp_position(self.current_agent_position)
-        self.collect_candys()
 
 
     def insert_row(self, row_index: int):
-        new_row = [Empty() for _ in range(self.width)]
-        self.map.insert(row_index, new_row)
+        self.map.insert_row(row_index)
 
         self.height = len(self.map)
-        self.collect_candys()
 
 
     def remove_row(self, row_index: int):
         if self.height <= 1:
             return
 
-        self.map.pop(row_index)
+        self.map.remove_row(row_index)
 
         self.height = len(self.map)
 
         self.start_position = self._clamp_position(self.start_position)
         self.current_agent_position = self._clamp_position(self.current_agent_position)
-        self.collect_candys()
 
 
     def _clamp_position(self, position: tuple[int, int]) -> tuple[int, int]:
@@ -144,17 +157,7 @@ class GridWorld:
         return row, col
     
     def set_cell(self, position: tuple[int, int], cell: WorldObject):
-        row, col = position
-
-        old_cell = self.get_cell(position)
-
-        if isinstance(old_cell, Candy) and position in self.candys:
-            self.candys.remove(position)
-
-        self.map[row][col] = cell
-
-        if isinstance(cell, Candy) and position not in self.candys:
-            self.candys.append(position)
+        self.map.set_cell(position, cell)
 
     def set_start_position(self, position: tuple[int, int]):
         self.start_position = position

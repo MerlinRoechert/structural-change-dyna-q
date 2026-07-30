@@ -1,10 +1,12 @@
 from enum import Enum
 
+
 class Action(Enum):
     UP = "up"
     DOWN = "down"
     LEFT = "left"
     RIGHT = "right"
+
 
 ACTION_DELTAS = {
     Action.UP: (-1, 0),

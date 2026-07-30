@@ -8,6 +8,13 @@ class SimulationMode:
     EVAL = "eval"
 
 
+class EpisodeEndReason:
+    GOAL = "goal"
+    TRAP = "trap"
+    MAX_STEPS = "max_steps"
+    EXPERIMENT_END = "experiment_end"
+
+
 class Simulation:
     def __init__(self, agent: Agent):
         self.agent = agent
@@ -29,6 +36,13 @@ class Simulation:
     def done(self) -> bool:
         return self.agent.terminated
 
+    @property
+    def terminal_end_reason(self) -> str:
+        if self.reached_goal:
+            return EpisodeEndReason.GOAL
+
+        return EpisodeEndReason.TRAP
+
     def reset_episode(self):
         self.agent.reset_episode()
         self.total_reward = 0
@@ -39,14 +53,14 @@ class Simulation:
         self.used_slippery = False
         self.reached_goal = False
 
-    def finish_episode(self):
+    def finish_episode(self, end_reason: str):
         self.episode_summaries.append(
             {
                 "episode": len(self.episode_summaries) + 1,
                 "mode": self.mode,
                 "reward": self.total_reward,
                 "steps": self.steps,
-                "reached_goal": self.reached_goal,
+                "end_reason": end_reason,
                 "trap_hits": self.trap_hits,
                 "slippery_visits": self.slippery_visits,
                 "used_slippery": self.used_slippery,
@@ -135,7 +149,7 @@ class Simulation:
 
         successful_episodes = sum(
             1 for episode in self.episode_summaries
-            if episode["reached_goal"]
+            if episode["end_reason"] == EpisodeEndReason.GOAL
         )
 
         return successful_episodes / len(self.episode_summaries)

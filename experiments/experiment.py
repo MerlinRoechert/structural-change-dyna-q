@@ -2,7 +2,7 @@ import random
 
 from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent
 from core.map_factory import MapFactory
-from core.simulation import Simulation
+from core.simulation import EpisodeEndReason, Simulation
 from experiments.experiment_config import ExperimentConfig
 
 
@@ -40,11 +40,11 @@ class Experiment:
 
         self.simulation = Simulation(self.agent)
         self.current_step = 0
-        self.step_rewards: list[float] = []
+        self.step_history: list[dict] = []
 
     @property
     def cumulative_reward(self) -> float:
-        return sum(self.step_rewards)
+        return sum(step["reward"] for step in self.step_history)
 
     @property
     def finished(self) -> bool:
@@ -63,13 +63,25 @@ class Experiment:
             reward_before_step = self.simulation.total_reward
             self.simulation.step()
             step_reward = self.simulation.total_reward - reward_before_step
-            self.step_rewards.append(step_reward)
+            self.step_history.append(
+                {
+                    "reward": step_reward,
+                    "world_state": self.world.map.current_state,
+                }
+            )
             self.current_step += 1
     
             episode_finished = self.simulation.done or self.simulation.steps >= self.config.max_episode_steps
     
             if episode_finished or self.finished:
-                self.simulation.finish_episode()
+                if self.simulation.done:
+                    end_reason = self.simulation.terminal_end_reason
+                elif episode_finished:
+                    end_reason = EpisodeEndReason.MAX_STEPS
+                else:
+                    end_reason = EpisodeEndReason.EXPERIMENT_END
+
+                self.simulation.finish_episode(end_reason)
     
             if episode_finished and not self.finished:
                 self.simulation.reset_episode()

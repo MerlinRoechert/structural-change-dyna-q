@@ -1,6 +1,6 @@
 from agents import QLearningAgent
 from core.grid_world import GridWorld
-from core.simulation import Simulation, SimulationMode
+from core.simulation import EpisodeEndReason, Simulation, SimulationMode
 
 
 class SimulationSession:
@@ -32,7 +32,9 @@ class SimulationSession:
         self.simulation.step()
 
         if self.simulation.done:
-            self.simulation.finish_episode()
+            self.simulation.finish_episode(
+                self.simulation.terminal_end_reason
+            )
 
     def start_run(self, episode_limit: int):
         self.run_start_episode = self.total_episodes_done
@@ -98,7 +100,12 @@ class SimulationSession:
         while not self.simulation.done and self.simulation.steps < max_steps:
             self.simulation.step()
 
-        self.simulation.finish_episode()
+        if self.simulation.done:
+            end_reason = self.simulation.terminal_end_reason
+        else:
+            end_reason = EpisodeEndReason.MAX_STEPS
+
+        self.simulation.finish_episode(end_reason)
 
     def train(self, episodes: int, max_steps: int = 100):
         for episode in range(episodes):

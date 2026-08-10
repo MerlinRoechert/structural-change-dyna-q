@@ -4,4 +4,4 @@ from agents.dyna_q_plus_agent import DynaQPlusAgent
 from agents.q_learning_agent import QLearningAgent
 
 
-__all__ = ["Agent", "DynaQAgent", "DynaQPlusAgent", "QLearningAgent"]
+__all__ = ["Agent", "DynaQAgent", "DynaQPlusAgent", "QLearningAgent", "StabilityAwareDynaQAgent"]

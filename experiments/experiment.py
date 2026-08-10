@@ -1,6 +1,6 @@
 import random
 
-from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent
+from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent, StabilityAwareDynaQAgent
 from core.map_factory import MapFactory
 from core.simulation import EpisodeEndReason, Simulation
 from experiments.experiment_config import ExperimentConfig
@@ -34,6 +34,14 @@ class Experiment:
                 epsilon=config.epsilon,
                 planning_steps=config.planning_steps,
                 exploration_bonus=config.exploration_bonus,
+            )
+        elif config.algorithm == StabilityAwareDynaQAgent.name:
+            self.agent = StabilityAwareDynaQAgent(
+                world=self.world,
+                learning_rate=config.learning_rate,
+                discount_factor=config.discount_factor,
+                epsilon=config.epsilon,
+                planning_steps=config.planning_steps,
             )
         else:
             raise ValueError(f"Unknown algorithm '{config.algorithm}'")

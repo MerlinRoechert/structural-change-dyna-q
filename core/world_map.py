@@ -4,8 +4,6 @@ from core.world_object import Empty, WorldObject
 
 
 class WorldMap:
-    MAX_STATES = 2
-
     def __init__(
         self,
         states: dict[int, list[list[WorldObject]]],
@@ -106,14 +104,12 @@ class WorldMap:
         if not states:
             raise ValueError("WorldMap requires at least one state")
 
-        if len(states) > self.MAX_STATES:
-            raise ValueError("WorldMap supports at most two states")
-
         if 1 not in states:
             raise ValueError("WorldMap requires state 1")
 
-        if any(state_id not in (1, 2) for state_id in states):
-            raise ValueError("WorldMap state ids must be 1 or 2")
+        expected_state_ids = set(range(1, len(states) + 1))
+        if set(states) != expected_state_ids:
+            raise ValueError("WorldMap state ids must be consecutive from 1")
 
         if initial_state not in states:
             raise ValueError("initial_state must exist in states")

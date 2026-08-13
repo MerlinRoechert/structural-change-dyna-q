@@ -12,7 +12,12 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
-from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent
+from agents import (
+    DynaQAgent,
+    DynaQPlusAgent,
+    QLearningAgent,
+    StabilityAwareDynaQAgent,
+)
 from core.simulation import SimulationMode
 from core.simulation_session import SimulationSession
 
@@ -78,6 +83,10 @@ class ControlPanel(QWidget):
         self.agent_dropdown.addItem("Q-Learning", QLearningAgent)
         self.agent_dropdown.addItem("Dyna-Q", DynaQAgent)
         self.agent_dropdown.addItem("Dyna-Q+", DynaQPlusAgent)
+        self.agent_dropdown.addItem(
+            "Stability-Aware Dyna-Q",
+            StabilityAwareDynaQAgent,
+        )
 
         self.planning_steps_input = QSpinBox()
         self.planning_steps_input.setRange(0, 10_000)

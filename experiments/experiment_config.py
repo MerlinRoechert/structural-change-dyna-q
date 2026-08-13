@@ -12,6 +12,10 @@ class ExperimentConfig:
     epsilon: float = 0.2
     planning_steps: int = 10
     exploration_bonus: float = 0.001
+    initial_stability: float = 0.5
+    stability_increase: float = 0.1
+    evidence_gain: float = 0.01
+    change_evidence_decay: float = 0.5
 
     change_step: int | None = None
     change_duration: int | None = None

@@ -1,16 +1,16 @@
 import argparse
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING
+
+from py_experimenter.experimenter import PyExperimenter
+from py_experimenter.result_processor import ResultProcessor
 
 from experiments.experiment import Experiment
 from experiments.experiment_config import ExperimentConfig
 
-if TYPE_CHECKING:
-    from py_experimenter.result_processor import ResultProcessor
-
 
 CONFIG_PATH = Path(__file__).with_name("pyexperimenter.yml")
+DATABASE_PROGRESS_INTERVAL = 500
 
 
 def create_experiment_config(parameters: dict) -> ExperimentConfig:
@@ -23,6 +23,10 @@ def create_experiment_config(parameters: dict) -> ExperimentConfig:
         epsilon=float(parameters["epsilon"]),
         planning_steps=int(parameters["planning_steps"]),
         exploration_bonus=float(parameters["exploration_bonus"]),
+        initial_stability=float(parameters["initial_stability"]),
+        stability_increase=float(parameters["stability_increase"]),
+        evidence_gain=float(parameters["evidence_gain"]),
+        change_evidence_decay=float(parameters["change_evidence_decay"]),
         change_step=int(parameters["change_step"]),
         change_duration=int(parameters["change_duration"]),
         steps_after_change=int(parameters["steps_after_change"]),
@@ -42,6 +46,10 @@ def iterate_step_records(experiment: Experiment) -> Iterator[dict]:
                 "reward": step["reward"],
                 "world_state": step["world_state"],
                 "episode": episode["episode"],
+                "stability_score": step["stability_score"],
+                "change_evidence": step["change_evidence"],
+                "change_probability": step["change_probability"],
+                "change_detected": step["change_detected"],
             }
             step_index += 1
 
@@ -60,22 +68,59 @@ def iterate_episode_records(experiment: Experiment) -> Iterator[dict]:
 
 def run_experiment(
     parameters: dict,
-    result_processor: "ResultProcessor",
+    result_processor: ResultProcessor,
     custom_config: dict,
 ) -> None:
-    experiment = Experiment(create_experiment_config(parameters))
-    experiment.run()
+    logger = result_processor.logger
+    config = create_experiment_config(parameters)
+    logger.info(
+        "Starting experiment: algorithm=%s, environment=%s, seed=%s, steps=%s",
+        config.algorithm,
+        config.environment,
+        config.seed,
+        config.total_steps,
+    )
 
-    for step_record in iterate_step_records(experiment):
+    experiment = Experiment(config)
+    experiment.run(logger)
+
+    episode_count = len(experiment.simulation.episode_summaries)
+    logger.info(
+        "Simulation finished: episodes=%s, reward=%s",
+        episode_count,
+        experiment.cumulative_reward,
+    )
+
+    for saved_steps, step_record in enumerate(
+        iterate_step_records(experiment),
+        start=1,
+    ):
         result_processor.process_logs({"steps": step_record})
+        if (
+            saved_steps % DATABASE_PROGRESS_INTERVAL == 0
+            or saved_steps == experiment.current_step
+        ):
+            logger.info(
+                "Saved steps to database: %s/%s",
+                saved_steps,
+                experiment.current_step,
+            )
 
     for episode_record in iterate_episode_records(experiment):
         result_processor.process_logs({"episodes": episode_record})
 
+    change_detections = sum(
+        step["change_detected"] is True
+        for step in experiment.step_history
+    )
+    logger.info(
+        "Experiment finished: episodes=%s, change_detections=%s",
+        episode_count,
+        change_detections,
+    )
+
 
 def main() -> None:
-    from py_experimenter.experimenter import PyExperimenter
-
     parser = argparse.ArgumentParser(description="Run experiments with PyExperimenter")
     parser.add_argument("--max-experiments", type=int, default=-1)
     arguments = parser.parse_args()

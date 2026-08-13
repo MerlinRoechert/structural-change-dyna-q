@@ -8,14 +8,14 @@ PY_EXPERIMENTER:
       name: structural_change_experiments
       keyfields:
         algorithm:
-          type: VARCHAR(20)
-          values: [q-learning, dyna-q, dyna-q-plus]
+          type: VARCHAR(30)
+          values: [q-learning, dyna-q, dyna-q-plus, stability-aware-dyna-q]
         environment:
           type: VARCHAR(30)
-          values: [two-routes, shortcut, mixed-stability]
+          values: [transient-noise]
         seed:
           type: INT
-          values: [0]
+          values: [0,1]
         learning_rate:
           type: DOUBLE
           values: [0.1]
@@ -31,6 +31,18 @@ PY_EXPERIMENTER:
         exploration_bonus:
           type: DOUBLE
           values: [0.001]
+        initial_stability:
+          type: DOUBLE
+          values: [0.5]
+        stability_increase:
+          type: DOUBLE
+          values: [0.1]
+        evidence_gain:
+          type: DOUBLE
+          values: [0.01]
+        change_evidence_decay:
+          type: DOUBLE
+          values: [0.5]
         change_step:
           type: INT
           values: [1000]
@@ -50,7 +62,8 @@ PY_EXPERIMENTER:
         world_state: INT
         episode: INT
         stability_score: DOUBLE
-        adaptation_mode: VARCHAR(30)
+        change_evidence: DOUBLE
+        change_probability: DOUBLE
         change_detected: BOOL
       episodes:
         episode: INT

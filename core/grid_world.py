@@ -3,15 +3,20 @@ import random
 from core.action import ACTION_DELTAS, Action
 from core.world_map import WorldMap
 from core.world_object import Candy, Empty, Goal, Slippery, Trap, Wall, WorldObject
+from core.world_state_behavior import WorldStateBehavior
 
 class GridWorld:
     def __init__(
         self,
         start_position: tuple[int, int],
+        state_behavior: WorldStateBehavior,
+        seed: int,
         world_map: WorldMap | None = None,
     ):
         self.start_position: tuple[int, int] = start_position
         self.current_agent_position: tuple[int, int] = start_position
+        self.state_behavior = state_behavior
+        self.random = random.Random(seed)
         if world_map is None:
             world_map = self._create_default_map()
 
@@ -20,6 +25,11 @@ class GridWorld:
         self._validate_map()
         self.height = len(self.map)
         self.width = len(self.map[0])
+
+    def update_state(self, current_step: int) -> bool:
+        previous_state = self.map.current_state
+        self.state_behavior.update(self.map, current_step)
+        return previous_state != self.map.current_state
 
     def _create_default_map(self) -> WorldMap:
         return WorldMap(
@@ -82,13 +92,13 @@ class GridWorld:
         current_cell = self.get_cell(self.current_agent_position)
 
         if isinstance(current_cell, Slippery):
-            if random.random() > current_cell.success_probability:
+            if self.random.random() > current_cell.success_probability:
                 possible_actions = [
                     possible_action
                     for possible_action in ACTION_DELTAS.keys()
                     if possible_action != action
                 ]
-                action = random.choice(possible_actions)
+                action = self.random.choice(possible_actions)
 
         row_delta, col_delta = ACTION_DELTAS[action]
         new_position = (row + row_delta, col + col_delta)

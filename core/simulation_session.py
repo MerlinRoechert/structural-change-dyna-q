@@ -1,11 +1,16 @@
 from agents import QLearningAgent
 from core.grid_world import GridWorld
 from core.simulation import EpisodeEndReason, Simulation, SimulationMode
+from core.world_state_behavior import StaticWorldStateBehavior
 
 
 class SimulationSession:
     def __init__(self):
-        world = GridWorld(start_position=(0, 0))
+        world = GridWorld(
+            start_position=(0, 0),
+            state_behavior=StaticWorldStateBehavior(),
+            seed=0,
+        )
         self.agent = QLearningAgent(world)
         self.simulation = Simulation(self.agent)
 

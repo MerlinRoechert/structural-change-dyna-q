@@ -41,6 +41,24 @@ class QLearningAgent(Agent):
         reward: float,
         terminated: bool,
     ) -> None:
+        self._update_q_value(
+            current_state=current_state,
+            action=action,
+            next_state=next_state,
+            reward=reward,
+            terminated=terminated,
+            learning_rate=self.learning_rate,
+        )
+
+    def _update_q_value(
+        self,
+        current_state: tuple[int, int],
+        action: Action,
+        next_state: tuple[int, int],
+        reward: float,
+        terminated: bool,
+        learning_rate: float,
+    ) -> None:
         self.init_state(current_state)
         self.init_state(next_state)
 
@@ -49,7 +67,7 @@ class QLearningAgent(Agent):
             self.q_table[next_state].values()
         )
 
-        self.q_table[current_state][action] = old_q + self.learning_rate * (
+        self.q_table[current_state][action] = old_q + learning_rate * (
             reward + self.discount_factor * best_next_q - old_q
         )
 

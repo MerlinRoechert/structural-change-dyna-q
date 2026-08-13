@@ -1,9 +1,18 @@
 import argparse
+import logging
 
-from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent
+from agents import (
+    DynaQAgent,
+    DynaQPlusAgent,
+    QLearningAgent,
+    StabilityAwareDynaQAgent,
+)
 from core.map_factory import WorldId
 from experiments.experiment import Experiment
 from experiments.experiment_config import ExperimentConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
@@ -14,6 +23,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
             QLearningAgent.name,
             DynaQAgent.name,
             DynaQPlusAgent.name,
+            StabilityAwareDynaQAgent.name,
         ],
         default=QLearningAgent.name,
     )
@@ -28,6 +38,10 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--epsilon", type=float, default=0.2)
     parser.add_argument("--planning-steps", type=int, default=10)
     parser.add_argument("--exploration-bonus", type=float, default=0.001)
+    parser.add_argument("--initial-stability", type=float, default=0.5)
+    parser.add_argument("--stability-increase", type=float, default=0.1)
+    parser.add_argument("--evidence-gain", type=float, default=0.01)
+    parser.add_argument("--change-evidence-decay", type=float, default=0.5)
     parser.add_argument("--change-step", type=int)
     parser.add_argument("--change-duration", type=int)
     parser.add_argument("--steps-after-change", type=int, default=1_000)
@@ -36,6 +50,11 @@ def create_argument_parser() -> argparse.ArgumentParser:
 
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(name)s - %(levelname)s | %(message)s",
+    )
+
     arguments = create_argument_parser().parse_args()
     config = ExperimentConfig(
         algorithm=arguments.algorithm,
@@ -46,6 +65,10 @@ def main():
         epsilon=arguments.epsilon,
         planning_steps=arguments.planning_steps,
         exploration_bonus=arguments.exploration_bonus,
+        initial_stability=arguments.initial_stability,
+        stability_increase=arguments.stability_increase,
+        evidence_gain=arguments.evidence_gain,
+        change_evidence_decay=arguments.change_evidence_decay,
         change_step=arguments.change_step,
         change_duration=arguments.change_duration,
         steps_after_change=arguments.steps_after_change,
@@ -53,7 +76,7 @@ def main():
     )
 
     experiment = Experiment(config)
-    experiment.run()
+    experiment.run(logger)
 
     print(f"Steps: {experiment.current_step}")
     print(f"Episodes: {len(experiment.simulation.episode_summaries)}")

@@ -1,1 +1,3 @@
 py-experimenter==1.4.2
+jupyterlab
+matplotlib

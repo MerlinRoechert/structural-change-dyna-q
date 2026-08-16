@@ -78,13 +78,22 @@ class DynaQAgent(QLearningAgent):
 
         for _ in range(self.planning_steps):
             (state, action), transition = random.choice(model_entries)
-            super().learn(
-                current_state=state,
-                action=action,
-                next_state=transition.next_state,
-                reward=self._planning_reward(transition),
-                terminated=transition.terminated,
-            )
+            self._planning_update(state, action, transition)
+
+    def _planning_update(
+        self,
+        state: tuple[int, int],
+        action: Action,
+        transition: ModelTransition,
+    ) -> None:
+        self._update_q_value(
+            current_state=state,
+            action=action,
+            next_state=transition.next_state,
+            reward=self._planning_reward(transition),
+            terminated=transition.terminated,
+            learning_rate=self.learning_rate,
+        )
 
     def _update_model(
         self,

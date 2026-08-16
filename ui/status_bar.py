@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFrame, QGridLayout, QLabel, QWidget
 from core.simulation_session import SimulationSession
-from core.world_object import Candy, Empty, Goal, Trap, Wall
+from core.world_object import Candy, Empty, Goal, Hazard, Trap, Wall
 
 
 class StatusBar(QWidget):
@@ -24,7 +24,7 @@ class StatusBar(QWidget):
         layout.addWidget(QLabel(f"Goal: green ({Goal.reward})"), 1, 1)
         layout.addWidget(QLabel(f"Trap: red ({Trap.reward})"), 2, 1)
         layout.addWidget(QLabel(f"Candy: yellow (R={Candy.reward})"), 1, 2)
-        layout.addWidget(QLabel("Agent: blue dot"), 2, 2)
+        layout.addWidget(QLabel(f"Hazard: orange ({Hazard.reward})"), 2, 2)
 
         separator = QFrame()
         separator.setFrameShape(QFrame.VLine)

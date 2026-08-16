@@ -2,20 +2,13 @@ from enum import Enum
 
 from core.grid_world import GridWorld
 from core.world_map import WorldMap
-from core.world_object import Empty, Goal, Slippery, Trap, Wall, WorldObject
-from core.world_state_behavior import (
-    ScheduledWorldStateBehavior,
-    StaticWorldStateBehavior,
-    TransientNoiseWorldStateBehavior,
-    WorldStateBehavior,
-)
+from core.world_object import Empty, Goal, Hazard, Slippery, Trap, Wall, WorldObject
+from core.world_state_behavior import WorldStateBehavior
 
 
 class WorldId(str, Enum):
     TWO_ROUTES = "two-routes"
     SHORTCUT = "shortcut"
-    MIXED_STABILITY = "mixed-stability"
-    TRANSIENT_NOISE = "transient-noise"
 
 
 class MapFactory:
@@ -32,7 +25,7 @@ class MapFactory:
             ),
             2: (
                 "###########",
-                "#A...#...G#",
+                "#A...H...G#",
                 "#.#######.#",
                 "#.........#",
                 "#.#######.#",
@@ -58,55 +51,13 @@ class MapFactory:
                 "###########",
             ),
         },
-        WorldId.MIXED_STABILITY: {
-            1: (
-                "###########",
-                "#A..~~~...#",
-                "#.#.....#.#",
-                "#.#.###.#.#",
-                "#...~~~...#",
-                "#.......#G#",
-                "###########",
-            ),
-            2: (
-                "###########",
-                "#A..~~~#..#",
-                "#.#.....#.#",
-                "#.#.###.#.#",
-                "#...~~~...#",
-                "#.......#G#",
-                "###########",
-            ),
-        },
-        WorldId.TRANSIENT_NOISE: {
-            1: (
-                "###########",
-                "#A.......G#",
-                "#.#######.#",
-                "#.........#",
-                "###########",
-            ),
-            2: (
-                "###########",
-                "#A.T.....G#",
-                "#.#######.#",
-                "#.........#",
-                "###########",
-            ),
-            3: (
-                "###########",
-                "#A.....T.G#",
-                "#.#######.#",
-                "#.........#",
-                "###########",
-            ),
-        },
     }
 
     _CELL_TYPES = {
         ".": Empty,
         "#": Wall,
         "G": Goal,
+        "H": Hazard,
         "T": Trap,
         "~": Slippery,
     }
@@ -115,8 +66,7 @@ class MapFactory:
     def create(
         cls,
         world_id: WorldId | str,
-        change_step: int | None = None,
-        change_duration: int | None = None,
+        state_behavior: WorldStateBehavior,
         seed: int = 0,
     ) -> GridWorld:
         try:
@@ -140,41 +90,11 @@ class MapFactory:
 
             state_maps[state_id] = state_map
 
-        state_behavior = cls._create_state_behavior(
-            world_id=normalized_world_id,
-            change_step=change_step,
-            change_duration=change_duration,
-            seed=seed,
-        )
-
         return GridWorld(
             start_position=start_position,
             state_behavior=state_behavior,
             seed=seed,
             world_map=WorldMap(state_maps),
-        )
-
-    @classmethod
-    def _create_state_behavior(
-        cls,
-        world_id: WorldId,
-        change_step: int | None,
-        change_duration: int | None,
-        seed: int,
-    ) -> WorldStateBehavior:
-        if change_step is None:
-            return StaticWorldStateBehavior()
-
-        if world_id is WorldId.TRANSIENT_NOISE:
-            return TransientNoiseWorldStateBehavior(
-                noise_start_step=change_step,
-                noise_duration=change_duration,
-                seed=seed,
-            )
-
-        return ScheduledWorldStateBehavior(
-            change_step=change_step,
-            change_duration=change_duration,
         )
 
     @classmethod

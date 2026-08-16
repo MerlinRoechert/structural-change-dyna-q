@@ -1,34 +1,41 @@
 import argparse
 from collections.abc import Iterator
 from pathlib import Path
+from time import perf_counter
 
 from py_experimenter.experimenter import PyExperimenter
 from py_experimenter.result_processor import ResultProcessor
 
+from experiments.batch_log_writer import BatchLogWriter
 from experiments.experiment import Experiment
 from experiments.experiment_config import ExperimentConfig
 
 
 CONFIG_PATH = Path(__file__).with_name("pyexperimenter.yml")
-DATABASE_PROGRESS_INTERVAL = 500
 
 
 def create_experiment_config(parameters: dict) -> ExperimentConfig:
+    change_step = parameters["change_step"]
+    if change_step is not None:
+        change_step = int(change_step)
+
+    change_duration = parameters["change_duration"]
+    if change_duration is not None:
+        change_duration = int(change_duration)
+
     return ExperimentConfig(
         algorithm=parameters["algorithm"],
         environment=parameters["environment"],
+        world_behavior=parameters["world_behavior"],
         seed=int(parameters["seed"]),
         learning_rate=float(parameters["learning_rate"]),
         discount_factor=float(parameters["discount_factor"]),
         epsilon=float(parameters["epsilon"]),
         planning_steps=int(parameters["planning_steps"]),
         exploration_bonus=float(parameters["exploration_bonus"]),
-        initial_stability=float(parameters["initial_stability"]),
-        stability_increase=float(parameters["stability_increase"]),
-        evidence_gain=float(parameters["evidence_gain"]),
-        change_evidence_decay=float(parameters["change_evidence_decay"]),
-        change_step=int(parameters["change_step"]),
-        change_duration=int(parameters["change_duration"]),
+        evidence_decay=float(parameters["evidence_decay"]),
+        change_step=change_step,
+        change_duration=change_duration,
         steps_after_change=int(parameters["steps_after_change"]),
         max_episode_steps=int(parameters["max_episode_steps"]),
     )
@@ -43,13 +50,21 @@ def iterate_step_records(experiment: Experiment) -> Iterator[dict]:
 
             yield {
                 "global_step": step_index + 1,
+                "state_row": step["state_row"],
+                "state_column": step["state_column"],
+                "action": step["action"],
+                "next_state_row": step["next_state_row"],
+                "next_state_column": step["next_state_column"],
                 "reward": step["reward"],
+                "terminated": step["terminated"],
                 "world_state": step["world_state"],
                 "episode": episode["episode"],
+                "model_mismatch": step["model_mismatch"],
                 "stability_score": step["stability_score"],
-                "change_evidence": step["change_evidence"],
-                "change_probability": step["change_probability"],
-                "change_detected": step["change_detected"],
+                "observed_transition_stability": step[
+                    "observed_transition_stability"
+                ],
+                "candidate_count": step["candidate_count"],
             }
             step_index += 1
 
@@ -74,9 +89,11 @@ def run_experiment(
     logger = result_processor.logger
     config = create_experiment_config(parameters)
     logger.info(
-        "Starting experiment: algorithm=%s, environment=%s, seed=%s, steps=%s",
+        "Starting experiment: algorithm=%s, environment=%s, behavior=%s, "
+        "seed=%s, steps=%s",
         config.algorithm,
         config.environment,
+        config.world_behavior,
         config.seed,
         config.total_steps,
     )
@@ -91,33 +108,21 @@ def run_experiment(
         experiment.cumulative_reward,
     )
 
-    for saved_steps, step_record in enumerate(
-        iterate_step_records(experiment),
-        start=1,
-    ):
-        result_processor.process_logs({"steps": step_record})
-        if (
-            saved_steps % DATABASE_PROGRESS_INTERVAL == 0
-            or saved_steps == experiment.current_step
-        ):
-            logger.info(
-                "Saved steps to database: %s/%s",
-                saved_steps,
-                experiment.current_step,
-            )
+    log_writer = BatchLogWriter(result_processor)
+    log_writer.add_records("steps", iterate_step_records(experiment))
+    log_writer.add_records("episodes", iterate_episode_records(experiment))
 
-    for episode_record in iterate_episode_records(experiment):
-        result_processor.process_logs({"episodes": episode_record})
-
-    change_detections = sum(
-        step["change_detected"] is True
-        for step in experiment.step_history
-    )
+    logger.info("Saving %s log records to database", log_writer.record_count)
+    saving_started_at = perf_counter()
+    log_writer.write()
+    saving_duration = perf_counter() - saving_started_at
     logger.info(
-        "Experiment finished: episodes=%s, change_detections=%s",
-        episode_count,
-        change_detections,
+        "Saved %s log records in %.3f seconds",
+        log_writer.record_count,
+        saving_duration,
     )
+
+    logger.info("Experiment finished: episodes=%s", episode_count)
 
 
 def main() -> None:
@@ -129,7 +134,22 @@ def main() -> None:
         experiment_configuration_file_path=str(CONFIG_PATH),
         use_codecarbon=False,
     )
-    experimenter.fill_table_from_config()
+    scenarios = [
+        dict(scenario)
+        for scenario in experimenter.config.custom_configuration.custom_values[
+            "scenarios"
+        ]
+    ]
+    keyfields = experimenter.config.database_configuration.keyfields
+    shared_parameters = {
+        name: keyfield.values
+        for name, keyfield in keyfields.items()
+        if keyfield.values
+    }
+    experimenter.fill_table_from_combination(
+        fixed_parameter_combinations=scenarios,
+        parameters=shared_parameters,
+    )
     experimenter.execute(
         run_experiment,
         max_experiments=arguments.max_experiments,

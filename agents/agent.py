@@ -10,7 +10,9 @@ class Agent(ABC):
     def __init__(self, world: GridWorld):
         self.world = world
         self.actions = [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]
+        self.last_state: tuple[int, int] | None = None
         self.last_action: Action | None = None
+        self.last_next_state: tuple[int, int] | None = None
         self.last_reward = 0
         self.terminated = False
 
@@ -20,7 +22,9 @@ class Agent(ABC):
 
     def reset_episode(self) -> None:
         self.world.reset()
+        self.last_state = None
         self.last_action = None
+        self.last_next_state = None
         self.last_reward = 0
         self.terminated = False
 
@@ -41,7 +45,9 @@ class Agent(ABC):
                 terminated=terminated,
             )
 
+        self.last_state = current_state
         self.last_action = action
+        self.last_next_state = next_state
         self.last_reward = reward
         self.terminated = terminated
 

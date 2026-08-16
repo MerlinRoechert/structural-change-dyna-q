@@ -26,6 +26,10 @@ class Trap(WorldObject):
     reward: int = -30
     terminal = True
 
+class Hazard(WorldObject):
+    token: str = "H"
+    reward: int = -10
+
 class Slippery(WorldObject):
     token: str = "S"
     reward: int = -1

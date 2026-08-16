@@ -4,16 +4,22 @@ import random
 from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent, StabilityAwareDynaQAgent
 from core.map_factory import MapFactory
 from core.simulation import EpisodeEndReason, Simulation
+from core.world_state_behavior import WorldStateBehaviorFactory
 from experiments.experiment_config import ExperimentConfig
 
 
 class Experiment:
     def __init__(self, config: ExperimentConfig):
+        state_behavior = WorldStateBehaviorFactory.create(
+            world_behavior=config.world_behavior,
+            change_step=config.change_step,
+            change_duration=config.change_duration,
+            seed=config.seed,
+        )
         self.config = config
         self.world = MapFactory.create(
             world_id=config.environment,
-            change_step=config.change_step,
-            change_duration=config.change_duration,
+            state_behavior=state_behavior,
             seed=config.seed,
         )
 
@@ -48,11 +54,7 @@ class Experiment:
                 discount_factor=config.discount_factor,
                 epsilon=config.epsilon,
                 planning_steps=config.planning_steps,
-                initial_stability=config.initial_stability,
-                stability_increase=config.stability_increase,
-                evidence_gain=config.evidence_gain,
-                change_evidence_decay=config.change_evidence_decay,
-                seed=config.seed,
+                evidence_decay=config.evidence_decay,
             )
         else:
             raise ValueError(f"Unknown algorithm '{config.algorithm}'")
@@ -88,36 +90,31 @@ class Experiment:
                 )
     
             reward_before_step = self.simulation.total_reward
-            state_before_step = self.simulation.state
             self.simulation.step()
             step_reward = self.simulation.total_reward - reward_before_step
+            state_row, state_column = self.agent.last_state
+            next_state_row, next_state_column = self.agent.last_next_state
             step_record = {
+                "state_row": state_row,
+                "state_column": state_column,
+                "action": self.agent.last_action.value,
+                "next_state_row": next_state_row,
+                "next_state_column": next_state_column,
                 "reward": step_reward,
+                "terminated": self.agent.terminated,
                 "world_state": self.world.map.current_state,
+                "model_mismatch": None,
                 "stability_score": None,
-                "change_evidence": None,
-                "change_probability": None,
-                "change_detected": None,
+                "observed_transition_stability": None,
+                "candidate_count": None,
             }
             if isinstance(self.agent, StabilityAwareDynaQAgent):
+                step_record["model_mismatch"] = self.agent.model_mismatch
                 step_record["stability_score"] = self.agent.stability_score
-                step_record["change_evidence"] = self.agent.change_evidence
-                step_record["change_probability"] = self.agent.change_probability
-                step_record["change_detected"] = self.agent.change_detected
-
-                if self.agent.change_detected:
-                    logger.info(
-                        "Structural change detected: step=%s, state=%s, "
-                        "action=%s, observed_next_state=%s, "
-                        "stability=%.2f, evidence=%.2f, probability=%.2f",
-                        self.current_step + 1,
-                        state_before_step,
-                        self.agent.last_action.name,
-                        self.simulation.state,
-                        self.agent.stability_score,
-                        self.agent.change_evidence,
-                        self.agent.change_probability,
-                    )
+                step_record["observed_transition_stability"] = (
+                    self.agent.observed_transition_stability
+                )
+                step_record["candidate_count"] = self.agent.candidate_count
 
             self.step_history.append(step_record)
             self.current_step += 1

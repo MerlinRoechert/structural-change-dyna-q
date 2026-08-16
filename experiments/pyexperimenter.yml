@@ -7,15 +7,18 @@ PY_EXPERIMENTER:
     table:
       name: structural_change_experiments
       keyfields:
+        seed:
+          type: INT
+          values: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
         algorithm:
           type: VARCHAR(30)
           values: [q-learning, dyna-q, dyna-q-plus, stability-aware-dyna-q]
         environment:
           type: VARCHAR(30)
-          values: [transient-noise]
-        seed:
-          type: INT
-          values: [0,1]
+          values: []
+        world_behavior:
+          type: VARCHAR(20)
+          values: []
         learning_rate:
           type: DOUBLE
           values: [0.1]
@@ -31,41 +34,65 @@ PY_EXPERIMENTER:
         exploration_bonus:
           type: DOUBLE
           values: [0.001]
-        initial_stability:
+        evidence_decay:
           type: DOUBLE
-          values: [0.5]
-        stability_increase:
-          type: DOUBLE
-          values: [0.1]
-        evidence_gain:
-          type: DOUBLE
-          values: [0.01]
-        change_evidence_decay:
-          type: DOUBLE
-          values: [0.5]
+          values: [0.9]
         change_step:
           type: INT
-          values: [1000]
+          values: []
         change_duration:
           type: INT
-          values: [500]
+          values: []
         steps_after_change:
           type: INT
-          values: [1000]
+          values: []
         max_episode_steps:
           type: INT
           values: [100]
     logtables:
       steps:
         global_step: INT
+        state_row: INT
+        state_column: INT
+        action: VARCHAR(10)
+        next_state_row: INT
+        next_state_column: INT
         reward: DOUBLE
+        terminated: INT
         world_state: INT
         episode: INT
+        model_mismatch: INT
         stability_score: DOUBLE
-        change_evidence: DOUBLE
-        change_probability: DOUBLE
-        change_detected: BOOL
+        observed_transition_stability: DOUBLE
+        candidate_count: INT
       episodes:
         episode: INT
         end_step: INT
         end_reason: VARCHAR(30)
+  Custom:
+    scenarios:
+      - environment: two-routes
+        world_behavior: stationary
+        change_step: null
+        change_duration: null
+        steps_after_change: 3000
+      - environment: two-routes
+        world_behavior: permanent
+        change_step: 1000
+        change_duration: null
+        steps_after_change: 2000
+      - environment: two-routes
+        world_behavior: temporary
+        change_step: 1000
+        change_duration: 500
+        steps_after_change: 2000
+      - environment: two-routes
+        world_behavior: noise
+        change_step: 1000
+        change_duration: 500
+        steps_after_change: 2000
+      - environment: shortcut
+        world_behavior: permanent
+        change_step: 1000
+        change_duration: null
+        steps_after_change: 2000

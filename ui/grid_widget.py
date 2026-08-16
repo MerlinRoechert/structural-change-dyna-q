@@ -3,7 +3,7 @@ from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
 from core.action import Action
-from core.world_object import Candy, Empty, Goal, Slippery, Trap, Wall
+from core.world_object import Candy, Empty, Goal, Hazard, Slippery, Trap, Wall
 
 
 class GridWidget(QWidget):
@@ -328,6 +328,9 @@ class GridWidget(QWidget):
 
         if isinstance(cell, Trap):
             return QColor(235, 200, 200)
+
+        if isinstance(cell, Hazard):
+            return QColor(245, 190, 130)
         
         if isinstance(cell, Slippery):
             return QColor(180, 200, 255)
@@ -371,6 +374,10 @@ class GridWidget(QWidget):
             return
 
         if isinstance(cell, Trap):
+            self.world.set_cell(position, Hazard())
+            return
+
+        if isinstance(cell, Hazard):
             self.world.set_cell(position, Candy())
             return
         

@@ -1,7 +1,15 @@
 import random
 from abc import ABC, abstractmethod
+from enum import Enum
 
 from core.world_map import WorldMap
+
+
+class WorldBehavior(str, Enum):
+    STATIONARY = "stationary"
+    PERMANENT = "permanent"
+    TEMPORARY = "temporary"
+    NOISE = "noise"
 
 
 class WorldStateBehavior(ABC):
@@ -43,7 +51,7 @@ class ScheduledWorldStateBehavior(WorldStateBehavior):
 
 class TransientNoiseWorldStateBehavior(WorldStateBehavior):
     log_state_changes = False
-    NOISE_STATE_IDS = (2, 3)
+    NOISE_STATE_ID = 2
     NOISE_PROBABILITY = 0.2
 
     def __init__(
@@ -67,7 +75,7 @@ class TransientNoiseWorldStateBehavior(WorldStateBehavior):
             return
 
         if self.random.random() < self.NOISE_PROBABILITY:
-            world_map.set_state(self.random.choice(self.NOISE_STATE_IDS))
+            world_map.set_state(self.NOISE_STATE_ID)
 
     def _noise_is_active(self, current_step: int) -> bool:
         if current_step < self.noise_start_step:
@@ -77,3 +85,38 @@ class TransientNoiseWorldStateBehavior(WorldStateBehavior):
             return True
 
         return current_step < self.noise_start_step + self.noise_duration
+
+
+class WorldStateBehaviorFactory:
+    @staticmethod
+    def create(
+        world_behavior: WorldBehavior | str,
+        change_step: int | None,
+        change_duration: int | None,
+        seed: int,
+    ) -> WorldStateBehavior:
+        world_behavior = WorldBehavior(world_behavior)
+
+        if world_behavior is WorldBehavior.STATIONARY:
+            return StaticWorldStateBehavior()
+
+        if world_behavior is WorldBehavior.PERMANENT:
+            return ScheduledWorldStateBehavior(
+                change_step=change_step,
+                change_duration=None,
+            )
+
+        if world_behavior is WorldBehavior.TEMPORARY:
+            return ScheduledWorldStateBehavior(
+                change_step=change_step,
+                change_duration=change_duration,
+            )
+
+        if world_behavior is WorldBehavior.NOISE:
+            return TransientNoiseWorldStateBehavior(
+                noise_start_step=change_step,
+                noise_duration=change_duration,
+                seed=seed,
+            )
+
+        raise ValueError(f"Unknown world behavior '{world_behavior}'")

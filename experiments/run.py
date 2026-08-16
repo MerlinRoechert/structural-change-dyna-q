@@ -8,6 +8,7 @@ from agents import (
     StabilityAwareDynaQAgent,
 )
 from core.map_factory import WorldId
+from core.world_state_behavior import WorldBehavior
 from experiments.experiment import Experiment
 from experiments.experiment_config import ExperimentConfig
 
@@ -32,16 +33,18 @@ def create_argument_parser() -> argparse.ArgumentParser:
         choices=[world_id.value for world_id in WorldId],
         default=WorldId.TWO_ROUTES.value,
     )
+    parser.add_argument(
+        "--world-behavior",
+        choices=[behavior.value for behavior in WorldBehavior],
+        default=WorldBehavior.STATIONARY.value,
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--learning-rate", type=float, default=0.1)
     parser.add_argument("--discount-factor", type=float, default=0.9)
     parser.add_argument("--epsilon", type=float, default=0.2)
     parser.add_argument("--planning-steps", type=int, default=10)
     parser.add_argument("--exploration-bonus", type=float, default=0.001)
-    parser.add_argument("--initial-stability", type=float, default=0.5)
-    parser.add_argument("--stability-increase", type=float, default=0.1)
-    parser.add_argument("--evidence-gain", type=float, default=0.01)
-    parser.add_argument("--change-evidence-decay", type=float, default=0.5)
+    parser.add_argument("--evidence-decay", type=float, default=0.9)
     parser.add_argument("--change-step", type=int)
     parser.add_argument("--change-duration", type=int)
     parser.add_argument("--steps-after-change", type=int, default=1_000)
@@ -59,16 +62,14 @@ def main():
     config = ExperimentConfig(
         algorithm=arguments.algorithm,
         environment=arguments.environment,
+        world_behavior=arguments.world_behavior,
         seed=arguments.seed,
         learning_rate=arguments.learning_rate,
         discount_factor=arguments.discount_factor,
         epsilon=arguments.epsilon,
         planning_steps=arguments.planning_steps,
         exploration_bonus=arguments.exploration_bonus,
-        initial_stability=arguments.initial_stability,
-        stability_increase=arguments.stability_increase,
-        evidence_gain=arguments.evidence_gain,
-        change_evidence_decay=arguments.change_evidence_decay,
+        evidence_decay=arguments.evidence_decay,
         change_step=arguments.change_step,
         change_duration=arguments.change_duration,
         steps_after_change=arguments.steps_after_change,

@@ -109,8 +109,10 @@ class StabilityAwareDynaQAgent(DynaQAgent):
         planning_steps: int = DynaQAgent.DEFAULT_PLANNING_STEPS,
         evidence_decay: float = DEFAULT_EVIDENCE_DECAY,
     ):
-        if not 0.0 < evidence_decay < 1.0:
-            raise ValueError("evidence_decay must be between 0 and 1")
+        if not 0.0 < evidence_decay <= 1.0:
+            raise ValueError(
+                "evidence_decay must be greater than 0 and at most 1"
+            )
 
         super().__init__(
             world=world,

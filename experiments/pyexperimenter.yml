@@ -12,7 +12,7 @@ PY_EXPERIMENTER:
           values: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49]
         algorithm:
           type: VARCHAR(30)
-          values: [q-learning, dyna-q, dyna-q-plus, local-change-dyna-q, stability-aware-dyna-q]
+          values: []
         environment:
           type: VARCHAR(30)
           values: []
@@ -36,7 +36,7 @@ PY_EXPERIMENTER:
           values: [0.001]
         evidence_decay:
           type: DOUBLE
-          values: [0.9]
+          values: []
         confidence_rate:
           type: DOUBLE
           values: [0.1]
@@ -85,6 +85,19 @@ PY_EXPERIMENTER:
         end_step: INT
         end_reason: VARCHAR(30)
   Custom:
+    agent_variants:
+      - algorithm: q-learning
+        evidence_decay: 0.9
+      - algorithm: dyna-q
+        evidence_decay: 0.9
+      - algorithm: dyna-q-plus
+        evidence_decay: 0.9
+      - algorithm: local-change-dyna-q
+        evidence_decay: 0.9
+      - algorithm: stability-aware-dyna-q
+        evidence_decay: 0.9
+      - algorithm: stability-aware-dyna-q
+        evidence_decay: 1.0
     scenarios:
       - environment: two-routes
         world_behavior: stationary

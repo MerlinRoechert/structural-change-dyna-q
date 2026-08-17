@@ -141,11 +141,19 @@ def main() -> None:
         experiment_configuration_file_path=str(CONFIG_PATH),
         use_codecarbon=False,
     )
+    custom_values = experimenter.config.custom_configuration.custom_values
     scenarios = [
         dict(scenario)
-        for scenario in experimenter.config.custom_configuration.custom_values[
-            "scenarios"
-        ]
+        for scenario in custom_values["scenarios"]
+    ]
+    agent_variants = [
+        dict(agent_variant)
+        for agent_variant in custom_values["agent_variants"]
+    ]
+    experiment_variants = [
+        {**scenario, **agent_variant}
+        for scenario in scenarios
+        for agent_variant in agent_variants
     ]
     keyfields = experimenter.config.database_configuration.keyfields
     shared_parameters = {
@@ -154,7 +162,7 @@ def main() -> None:
         if keyfield.values
     }
     experimenter.fill_table_from_combination(
-        fixed_parameter_combinations=scenarios,
+        fixed_parameter_combinations=experiment_variants,
         parameters=shared_parameters,
     )
     experimenter.execute(

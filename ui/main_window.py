@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from agents import DynaQAgent, DynaQPlusAgent
+from agents import DynaQAgent, DynaQPlusAgent, LocalChangeDynaQAgent
 from core.simulation_session import SimulationSession
 from ui.control_panel import ControlPanel
 from ui.grid_widget import GridWidget
@@ -181,6 +181,20 @@ class MainWindow(QMainWindow):
         if isinstance(self.session.agent, DynaQPlusAgent):
             data["config"]["exploration_bonus"] = (
                 self.session.agent.exploration_bonus
+            )
+
+        if isinstance(self.session.agent, LocalChangeDynaQAgent):
+            data["config"]["confidence_rate"] = (
+                self.session.agent.confidence_rate
+            )
+            data["config"]["evidence_tolerance"] = (
+                self.session.agent.evidence_tolerance
+            )
+            data["config"]["repair_threshold"] = (
+                self.session.agent.repair_threshold
+            )
+            data["config"]["initial_confidence"] = (
+                self.session.agent.initial_confidence
             )
 
         file_path, _ = QFileDialog.getSaveFileName(

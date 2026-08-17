@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 from agents import (
     DynaQAgent,
     DynaQPlusAgent,
+    LocalChangeDynaQAgent,
     QLearningAgent,
     StabilityAwareDynaQAgent,
 )
@@ -83,6 +84,10 @@ class ControlPanel(QWidget):
         self.agent_dropdown.addItem("Q-Learning", QLearningAgent)
         self.agent_dropdown.addItem("Dyna-Q", DynaQAgent)
         self.agent_dropdown.addItem("Dyna-Q+", DynaQPlusAgent)
+        self.agent_dropdown.addItem(
+            "Local-Change Dyna-Q",
+            LocalChangeDynaQAgent,
+        )
         self.agent_dropdown.addItem(
             "Stability-Aware Dyna-Q",
             StabilityAwareDynaQAgent,

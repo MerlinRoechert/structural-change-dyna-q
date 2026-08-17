@@ -34,6 +34,10 @@ def create_experiment_config(parameters: dict) -> ExperimentConfig:
         planning_steps=int(parameters["planning_steps"]),
         exploration_bonus=float(parameters["exploration_bonus"]),
         evidence_decay=float(parameters["evidence_decay"]),
+        confidence_rate=float(parameters["confidence_rate"]),
+        evidence_tolerance=float(parameters["evidence_tolerance"]),
+        repair_threshold=float(parameters["repair_threshold"]),
+        initial_confidence=float(parameters["initial_confidence"]),
         change_step=change_step,
         change_duration=change_duration,
         steps_after_change=int(parameters["steps_after_change"]),
@@ -65,6 +69,9 @@ def iterate_step_records(experiment: Experiment) -> Iterator[dict]:
                     "observed_transition_stability"
                 ],
                 "candidate_count": step["candidate_count"],
+                "model_confidence": step["model_confidence"],
+                "change_evidence": step["change_evidence"],
+                "repair_triggered": step["repair_triggered"],
             }
             step_index += 1
 

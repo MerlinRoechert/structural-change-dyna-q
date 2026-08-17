@@ -14,6 +14,10 @@ class ExperimentConfig:
     planning_steps: int = 10
     exploration_bonus: float = 0.001
     evidence_decay: float = 0.9
+    confidence_rate: float = 0.1
+    evidence_tolerance: float = 0.25
+    repair_threshold: float = 2.0
+    initial_confidence: float = 0.5
 
     change_step: int | None = None
     change_duration: int | None = None

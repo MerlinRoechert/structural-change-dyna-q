@@ -4,6 +4,7 @@ import logging
 from agents import (
     DynaQAgent,
     DynaQPlusAgent,
+    LocalChangeDynaQAgent,
     QLearningAgent,
     StabilityAwareDynaQAgent,
 )
@@ -24,6 +25,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
             QLearningAgent.name,
             DynaQAgent.name,
             DynaQPlusAgent.name,
+            LocalChangeDynaQAgent.name,
             StabilityAwareDynaQAgent.name,
         ],
         default=QLearningAgent.name,
@@ -45,6 +47,10 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--planning-steps", type=int, default=10)
     parser.add_argument("--exploration-bonus", type=float, default=0.001)
     parser.add_argument("--evidence-decay", type=float, default=0.9)
+    parser.add_argument("--confidence-rate", type=float, default=0.1)
+    parser.add_argument("--evidence-tolerance", type=float, default=0.25)
+    parser.add_argument("--repair-threshold", type=float, default=2.0)
+    parser.add_argument("--initial-confidence", type=float, default=0.5)
     parser.add_argument("--change-step", type=int)
     parser.add_argument("--change-duration", type=int)
     parser.add_argument("--steps-after-change", type=int, default=1_000)
@@ -70,6 +76,10 @@ def main():
         planning_steps=arguments.planning_steps,
         exploration_bonus=arguments.exploration_bonus,
         evidence_decay=arguments.evidence_decay,
+        confidence_rate=arguments.confidence_rate,
+        evidence_tolerance=arguments.evidence_tolerance,
+        repair_threshold=arguments.repair_threshold,
+        initial_confidence=arguments.initial_confidence,
         change_step=arguments.change_step,
         change_duration=arguments.change_duration,
         steps_after_change=arguments.steps_after_change,

@@ -1,7 +1,13 @@
 import logging
 import random
 
-from agents import DynaQAgent, DynaQPlusAgent, QLearningAgent, StabilityAwareDynaQAgent
+from agents import (
+    DynaQAgent,
+    DynaQPlusAgent,
+    LocalChangeDynaQAgent,
+    QLearningAgent,
+    StabilityAwareDynaQAgent,
+)
 from core.map_factory import MapFactory
 from core.simulation import EpisodeEndReason, Simulation
 from core.world_state_behavior import WorldStateBehaviorFactory
@@ -46,6 +52,18 @@ class Experiment:
                 epsilon=config.epsilon,
                 planning_steps=config.planning_steps,
                 exploration_bonus=config.exploration_bonus,
+            )
+        elif config.algorithm == LocalChangeDynaQAgent.name:
+            self.agent = LocalChangeDynaQAgent(
+                world=self.world,
+                learning_rate=config.learning_rate,
+                discount_factor=config.discount_factor,
+                epsilon=config.epsilon,
+                planning_steps=config.planning_steps,
+                confidence_rate=config.confidence_rate,
+                evidence_tolerance=config.evidence_tolerance,
+                repair_threshold=config.repair_threshold,
+                initial_confidence=config.initial_confidence,
             )
         elif config.algorithm == StabilityAwareDynaQAgent.name:
             self.agent = StabilityAwareDynaQAgent(
@@ -107,14 +125,27 @@ class Experiment:
                 "stability_score": None,
                 "observed_transition_stability": None,
                 "candidate_count": None,
+                "model_confidence": None,
+                "change_evidence": None,
+                "repair_triggered": None,
             }
-            if isinstance(self.agent, StabilityAwareDynaQAgent):
+            if isinstance(
+                self.agent,
+                (LocalChangeDynaQAgent, StabilityAwareDynaQAgent),
+            ):
                 step_record["model_mismatch"] = self.agent.model_mismatch
+
+            if isinstance(self.agent, StabilityAwareDynaQAgent):
                 step_record["stability_score"] = self.agent.stability_score
                 step_record["observed_transition_stability"] = (
                     self.agent.observed_transition_stability
                 )
                 step_record["candidate_count"] = self.agent.candidate_count
+
+            if isinstance(self.agent, LocalChangeDynaQAgent):
+                step_record["model_confidence"] = self.agent.model_confidence
+                step_record["change_evidence"] = self.agent.change_evidence
+                step_record["repair_triggered"] = self.agent.repair_triggered
 
             self.step_history.append(step_record)
             self.current_step += 1

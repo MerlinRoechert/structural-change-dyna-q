@@ -97,6 +97,8 @@ PY_EXPERIMENTER:
       - algorithm: stability-aware-dyna-q
         evidence_decay: 0.9
       - algorithm: stability-aware-dyna-q
+        evidence_decay: 0.8
+      - algorithm: stability-aware-dyna-q
         evidence_decay: 1.0
     scenarios:
       - environment: two-routes

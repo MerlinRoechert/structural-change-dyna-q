@@ -83,7 +83,8 @@ python -m experiments.run --help
 
 The PyExperimenter configuration is stored in
 `experiments/pyexperimenter.yml`. It currently combines 50 seeds, five agents,
-and five scenarios, resulting in 1,250 executions.
+two additional Stability-Aware ablation settings, and five scenarios, resulting
+in 1,750 executions.
 
 Run one pending execution as a smoke test:
 

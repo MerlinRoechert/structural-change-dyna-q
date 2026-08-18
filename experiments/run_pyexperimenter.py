@@ -11,7 +11,8 @@ from experiments.experiment import Experiment
 from experiments.experiment_config import ExperimentConfig
 
 
-CONFIG_PATH = Path(__file__).with_name("pyexperimenter.yml")
+CONFIG_PATH = Path(__file__).with_name("pyexperimenter_explore.yml")
+#CONFIG_PATH = Path(__file__).with_name("pyexperimenter_test.yml")
 
 
 def create_experiment_config(parameters: dict) -> ExperimentConfig:
@@ -142,17 +143,23 @@ def main() -> None:
         use_codecarbon=False,
     )
     custom_values = experimenter.config.custom_configuration.custom_values
-    scenarios = [
-        dict(scenario)
-        for scenario in custom_values["scenarios"]
+    environments = custom_values["environments"]
+    world_behaviors = [
+        dict(world_behavior)
+        for world_behavior in custom_values["world_behaviors"]
     ]
     agent_variants = [
         dict(agent_variant)
         for agent_variant in custom_values["agent_variants"]
     ]
     experiment_variants = [
-        {**scenario, **agent_variant}
-        for scenario in scenarios
+        {
+            "environment": environment,
+            **world_behavior,
+            **agent_variant,
+        }
+        for environment in environments
+        for world_behavior in world_behaviors
         for agent_variant in agent_variants
     ]
     keyfields = experimenter.config.database_configuration.keyfields
@@ -161,10 +168,11 @@ def main() -> None:
         for name, keyfield in keyfields.items()
         if keyfield.values
     }
-    experimenter.fill_table_from_combination(
-        fixed_parameter_combinations=experiment_variants,
-        parameters=shared_parameters,
-    )
+    for experiment_variant in experiment_variants:
+        experimenter.fill_table_from_combination(
+            fixed_parameter_combinations=[experiment_variant],
+            parameters=shared_parameters,
+        )
     experimenter.execute(
         run_experiment,
         max_experiments=arguments.max_experiments,

@@ -1,0 +1,13 @@
+algorithm,world_behavior,seeds,transition_visits,mismatches
+stability-aware-dyna-q,noise,50,13762,468.0
+stability-aware-dyna-q,permanent,50,3997,350.0
+stability-aware-dyna-q,stationary,50,13787,0.0
+stability-aware-dyna-q,temporary,50,4105,381.0
+stability-aware-dyna-q (decay 0.8),noise,50,13740,496.0
+stability-aware-dyna-q (decay 0.8),permanent,50,3662,200.0
+stability-aware-dyna-q (decay 0.8),stationary,50,13787,0.0
+stability-aware-dyna-q (decay 0.8),temporary,50,3666,210.0
+stability-aware-dyna-q (no decay),noise,50,13764,468.0
+stability-aware-dyna-q (no decay),permanent,50,6689,3242.0
+stability-aware-dyna-q (no decay),stationary,50,13787,0.0
+stability-aware-dyna-q (no decay),temporary,50,13288,2572.0

@@ -1,0 +1,6 @@
+test_id,hypothesis,scenario,baseline,baseline_reward,stability_aware_reward,mean_difference,ci_low,ci_high,decision_limit,result,seeds
+H1_noise,H1,Transient noise,dyna-q,-0.2909,-0.1661,0.1248,0.0827,0.1705,0.0,supported,50
+H2_two_routes,H2,Permanent change in two-routes,dyna-q,-0.4847,-0.4927,-0.008,-0.0115,-0.0045,-0.05,supported,50
+H2_shortcut,H2,Permanent change in shortcut,dyna-q,-0.3567,-0.3769,-0.0202,-0.0323,-0.0103,-0.05,supported,50
+H3_stationary,H3,Stationary world,dyna-q,-0.1371,-0.1371,0.0,0.0,0.0,-0.05,supported,50
+H4_temporary_return,H4,First 500 steps after return,dyna-q,-0.3708,-0.3678,0.0031,-0.0044,0.0107,0.0,inconclusive,50

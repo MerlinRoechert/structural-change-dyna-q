@@ -3,122 +3,136 @@ PY_EXPERIMENTER:
 
   Database:
     provider: sqlite
-    database: experiments/pyexperimenter_results
+    database: experiments/pyexperimenter_results_test
     table:
       name: structural_change_experiments
       keyfields:
         seed:
           type: INT
           values: [50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99]
+
         algorithm:
           type: VARCHAR(30)
           values: []
+
         environment:
           type: VARCHAR(30)
           values: []
+
         world_behavior:
           type: VARCHAR(20)
           values: []
+
         learning_rate:
           type: DOUBLE
           values: [0.1]
+
         discount_factor:
           type: DOUBLE
           values: [0.9]
+
         epsilon:
           type: DOUBLE
           values: [0.2]
+
         planning_steps:
           type: INT
           values: [10]
+
         exploration_bonus:
           type: DOUBLE
           values: [0.001]
+
         evidence_decay:
           type: DOUBLE
-          values: []
+          values: [0.9]
+
         confidence_rate:
           type: DOUBLE
           values: [0.1]
+
         evidence_tolerance:
           type: DOUBLE
           values: [0.25]
+
         repair_threshold:
           type: DOUBLE
           values: [2.0]
+
         initial_confidence:
           type: DOUBLE
           values: [0.5]
+
         change_step:
           type: INT
           values: []
+
         change_duration:
           type: INT
           values: []
+
         steps_after_change:
           type: INT
           values: []
+
         max_episode_steps:
           type: INT
           values: [100]
-    logtables:
-      steps:
-        global_step: INT
-        state_row: INT
-        state_column: INT
-        action: VARCHAR(10)
-        next_state_row: INT
-        next_state_column: INT
-        reward: DOUBLE
-        terminated: INT
-        world_state: INT
-        episode: INT
-        model_mismatch: INT
-        stability_score: DOUBLE
-        observed_transition_stability: DOUBLE
-        candidate_count: INT
-        model_confidence: DOUBLE
-        change_evidence: DOUBLE
-        repair_triggered: INT
-      episodes:
-        episode: INT
-        end_step: INT
-        end_reason: VARCHAR(30)
+
+      logtables:
+        steps:
+          global_step: INT
+          state_row: INT
+          state_column: INT
+          action: VARCHAR(10)
+          next_state_row: INT
+          next_state_column: INT
+          reward: DOUBLE
+          terminated: INT
+          world_state: INT
+          episode: INT
+          model_mismatch: INT
+          stability_score: DOUBLE
+          observed_transition_stability: DOUBLE
+          candidate_count: INT
+          model_confidence: DOUBLE
+          change_evidence: DOUBLE
+          repair_triggered: INT
+
+        episodes:
+          episode: INT
+          end_step: INT
+          end_reason: VARCHAR(30)
+
   Custom:
+    environments:
+      - two-routes
+      - shortcut
+
     agent_variants:
       - algorithm: q-learning
-        evidence_decay: 0.9
       - algorithm: dyna-q
-        evidence_decay: 0.9
       - algorithm: dyna-q-plus
-        evidence_decay: 0.9
       - algorithm: local-change-dyna-q
-        evidence_decay: 0.9
       - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.9
-    scenarios:
-      - environment: two-routes
-        world_behavior: stationary
+
+    world_behaviors:
+      - world_behavior: stationary
         change_step: null
         change_duration: null
         steps_after_change: 3000
-      - environment: two-routes
-        world_behavior: permanent
+
+      - world_behavior: permanent
         change_step: 1000
         change_duration: null
         steps_after_change: 2000
-      - environment: two-routes
-        world_behavior: temporary
+
+      - world_behavior: temporary
         change_step: 1000
         change_duration: 500
         steps_after_change: 2000
-      - environment: two-routes
-        world_behavior: noise
+
+      - world_behavior: noise
         change_step: 1000
         change_duration: 500
-        steps_after_change: 2000
-      - environment: shortcut
-        world_behavior: permanent
-        change_step: 1000
-        change_duration: null
         steps_after_change: 2000

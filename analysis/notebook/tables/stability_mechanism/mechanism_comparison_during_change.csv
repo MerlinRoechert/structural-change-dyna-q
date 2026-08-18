@@ -1,0 +1,13 @@
+algorithm,world_behavior,average_observed_stability,minimum_model_stability,average_mismatches,seeds
+stability-aware-dyna-q,noise,0.7571679556029233,0.673837128754332,9.36,50
+stability-aware-dyna-q,permanent,0.6831607081407864,0.5220616260138352,7.0,50
+stability-aware-dyna-q,stationary,1.0,1.0,0.0,50
+stability-aware-dyna-q,temporary,0.6831607081407864,0.5220616260138352,7.0,50
+stability-aware-dyna-q (decay 0.8),noise,0.7750785212518073,0.560325042287776,9.9,50
+stability-aware-dyna-q (decay 0.8),permanent,0.7949276367344382,0.5119996813401644,4.0,50
+stability-aware-dyna-q (decay 0.8),stationary,1.0,1.0,0.0,50
+stability-aware-dyna-q (decay 0.8),temporary,0.7949276367344382,0.5119996813401644,4.0,50
+stability-aware-dyna-q (no decay),noise,0.7952067120714053,0.9148154127912441,9.36,50
+stability-aware-dyna-q (no decay),permanent,0.2814945772043122,0.5528360570786469,51.44,50
+stability-aware-dyna-q (no decay),stationary,1.0,1.0,0.0,50
+stability-aware-dyna-q (no decay),temporary,0.2814945772043122,0.5528360570786469,51.44,50

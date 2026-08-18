@@ -27,9 +27,14 @@ results from seeds 50-99.
 
 ### 1. Noise
 
-During short and repeated changes, Stability-Aware Dyna-Q should achieve a
-higher average reward than Dyna-Q. Older transitions should not be replaced
-immediately by every short disturbance.
+In `two-routes`, short changes make the known upper route worse. Stability-Aware
+Dyna-Q should achieve a higher average reward than Dyna-Q because older
+transitions should not be replaced immediately by every short disturbance.
+
+In `shortcut`, short changes temporarily open a beneficial route. We do not
+expect Stability-Aware Dyna-Q to be better in this case. The scenario shows
+whether robustness against short changes also makes the agent slower to use
+short-lived opportunities. It is evaluated without a directional decision.
 
 ### 2. Permanent Change
 
@@ -41,13 +46,18 @@ This is checked separately in `two-routes` and `shortcut`.
 
 Without a change, the additional transition model should not noticeably reduce
 performance. The average reward should be no more than 0.05 per step below
-Dyna-Q.
+Dyna-Q. This is checked separately in `two-routes` and `shortcut`.
 
 ### 4. Temporary Change
 
 When the original world returns, the stored transition candidates should help
 the agent reuse its previous knowledge. We therefore expect a higher average
-reward than Dyna-Q during the first 500 steps after the return.
+reward than Dyna-Q during the first 500 steps after the return. This is checked
+separately in `two-routes` and `shortcut`.
+
+For `shortcut`, we also report the reward while the shortcut is open. This
+shows whether retaining the old transition model slows down adaptation to a
+temporary beneficial change.
 
 ## Evaluation
 
@@ -80,6 +90,9 @@ The main metric is the average raw reward per step in the relevant phase:
 - stationary: the complete run,
 - temporary: the first 500 steps after the world returns.
 
+The reward during the temporary change is additionally reported for
+`shortcut`, but it does not replace the predefined return metric.
+
 Rolling reward curves help visualize learning and adaptation, but they are not
 used as separate statistical tests for every step.
 
@@ -89,14 +102,14 @@ results.
 
 ## Final Configuration
 
-The experiments use the parameters and scenarios from
-`experiments/pyexperimenter.yml`:
+The experiments use the parameters from `experiments/pyexperimenter.yml`. Every
+combination of the following environments and world behaviors is evaluated:
 
-- `two-routes / stationary`
-- `two-routes / noise`
-- `two-routes / temporary`
-- `two-routes / permanent`
-- `shortcut / permanent`
+- environments: `two-routes`, `shortcut`
+- world behaviors: `stationary`, `noise`, `temporary`, `permanent`
+
+This results in eight scenarios. All scenarios use the same five agents and
+seeds 50-99.
 
 If an expectation is not supported, we report that result instead of changing
 the method using the final seeds.

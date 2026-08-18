@@ -95,19 +95,7 @@ PY_EXPERIMENTER:
       - algorithm: local-change-dyna-q
         evidence_decay: 0.9
       - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.0
-      - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.2
-      - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.4
-      - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.6
-      - algorithm: stability-aware-dyna-q
-        evidence_decay: 0.8
-      - algorithm: stability-aware-dyna-q
         evidence_decay: 0.9
-      - algorithm: stability-aware-dyna-q
-        evidence_decay: 1.0
     scenarios:
       - environment: two-routes
         world_behavior: stationary

@@ -112,6 +112,18 @@ class LocalChangeModelEntryTests(unittest.TestCase):
 
 
 class StabilityAwareModelEntryTests(unittest.TestCase):
+    def test_evidence_decay_zero_keeps_only_current_observation(self):
+        entry = StabilityAwareModelEntry(evidence_decay=0.0)
+        entry.observe((1, 2), -1.0, False)
+        entry.observe((1, 2), -1.0, False)
+
+        entry.observe((2, 1), -1.0, False)
+
+        first_candidate, second_candidate = entry.candidates
+        self.assertEqual(first_candidate.evidence, 0.0)
+        self.assertEqual(second_candidate.evidence, 1.0)
+        self.assertEqual(entry.observed_transition_stability, 1.0)
+
     def test_evidence_decay_one_keeps_all_previous_evidence(self):
         entry = StabilityAwareModelEntry(evidence_decay=1.0)
         entry.observe((1, 2), -1.0, False)

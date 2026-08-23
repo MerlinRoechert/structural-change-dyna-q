@@ -2,5 +2,7 @@ test_id,hypothesis,scenario,baseline,baseline_reward,stability_aware_reward,mean
 H1_noise,H1,Transient noise,dyna-q,-0.2909199999999999,-0.16608,0.12484000000000002,0.08272000000000002,0.17052199999999998,0.0,supported,50
 H2_two_routes,H2,Permanent change in two-routes,dyna-q,-0.4847099999999999,-0.4927299999999999,-0.008019999999999998,-0.011450249999999999,-0.004489750000000005,-0.05,supported,50
 H2_shortcut,H2,Permanent change in shortcut,dyna-q,-0.35672999999999994,-0.37690000000000007,-0.02017,-0.03234025,-0.010289500000000007,-0.05,supported,50
-H3_stationary,H3,Stationary world,dyna-q,-0.13706666666666664,-0.13706666666666664,0.0,0.0,0.0,-0.05,supported,50
-H4_temporary_return,H4,First 500 steps after return,dyna-q,-0.37084000000000006,-0.36776,0.003080000000000003,-0.0043999999999999985,0.010720999999999993,0.0,inconclusive,50
+H3_two_routes_stationary,H3,Stationary two-routes world,dyna-q,-0.13706666666666664,-0.13706666666666664,0.0,0.0,0.0,-0.05,supported,50
+H3_shortcut_stationary,H3,Stationary shortcut world,dyna-q,-0.4965533333333334,-0.4965533333333334,0.0,0.0,0.0,-0.05,supported,50
+H4_two_routes_return,H4,First 500 steps after return in two-routes,dyna-q,-0.37084000000000006,-0.36776,0.003080000000000003,-0.00456,0.01064,0.0,inconclusive,50
+H4_shortcut_return,H4,First 500 steps after return in shortcut,dyna-q,-0.42816000000000004,-0.41847999999999996,0.009680000000000003,0.0031200000000000017,0.017720000000000007,0.0,supported,50

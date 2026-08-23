@@ -79,30 +79,30 @@ PY_EXPERIMENTER:
           type: INT
           values: [100]
 
-      logtables:
-        steps:
-          global_step: INT
-          state_row: INT
-          state_column: INT
-          action: VARCHAR(10)
-          next_state_row: INT
-          next_state_column: INT
-          reward: DOUBLE
-          terminated: INT
-          world_state: INT
-          episode: INT
-          model_mismatch: INT
-          stability_score: DOUBLE
-          observed_transition_stability: DOUBLE
-          candidate_count: INT
-          model_confidence: DOUBLE
-          change_evidence: DOUBLE
-          repair_triggered: INT
+    logtables:
+      steps:
+        global_step: INT
+        state_row: INT
+        state_column: INT
+        action: VARCHAR(10)
+        next_state_row: INT
+        next_state_column: INT
+        reward: DOUBLE
+        terminated: INT
+        world_state: INT
+        episode: INT
+        model_mismatch: INT
+        stability_score: DOUBLE
+        observed_transition_stability: DOUBLE
+        candidate_count: INT
+        model_confidence: DOUBLE
+        change_evidence: DOUBLE
+        repair_triggered: INT
 
-        episodes:
-          episode: INT
-          end_step: INT
-          end_reason: VARCHAR(30)
+      episodes:
+        episode: INT
+        end_step: INT
+        end_reason: VARCHAR(30)
 
   Custom:
     environments:
